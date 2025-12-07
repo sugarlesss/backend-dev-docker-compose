@@ -1,0 +1,36 @@
+networks:
+  inet:
+    driver: bridge
+    # 强制使用指定名称
+    name: backend-dev
+
+services:
+  mysql:
+    # 如果设置了 MYSQL_DISABLED=true，则添加 disabled profile
+    profiles:
+      - ${MYSQL_DISABLED:+disabled}
+    # https://hub.docker.com/_/mysql
+    #image: mysql:5.7.44
+    image: mysql:8.0.44
+    container_name: mysql
+    ports:
+      - 3306:3306
+      # 为了确认 my.cnf 自定义配置文件是否生效，可以将 mysql 的默认端口改掉试试
+      #- 3366:3366
+    environment:
+      TZ: Asia/Shanghai
+      # root 用户密码
+      MYSQL_ROOT_PASSWORD: ddXRaM5jr0BjjD6FCgeOMDcvNyzo0CBG
+    volumes:
+      # 数据文件映射 宿主机:容器
+      - ./MySQL/conf:/etc/mysql/conf.d
+      - ./MySQL/data:/var/lib/mysql
+      - ./MySQL/log:/var/log/mysql
+      - ./MySQL/init:/docker-entrypoint-initdb.d
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    # 自动尝试重启容器
+    restart: always
+    #restart: on-failure:3
+    networks:
+      - backend-dev

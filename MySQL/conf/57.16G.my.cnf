@@ -1,0 +1,198 @@
+###### [client] 控制 MySQL 客户端的默认行为 ######
+[client]
+socket=/var/lib/mysql/mysql.sock
+default-character-set=utf8mb4
+
+###### [mysql] 定义 mysql 命令行工具的设置 ######
+[mysql]
+socket=/var/lib/mysql/mysql.sock
+default-character-set=utf8mb4
+
+###### [mysqld_safe] 定义守护进程的设置 ######
+# mysqld_safe 是 MySQL 的一个守护进程启动脚本，用于启动 mysqld 服务，负责监控进程并在崩溃时尝试重新启动。
+# 但在大多数现代 MySQL 8.0 部署中，mysqld_safe 已经很少被使用，因为现在通常直接通过 systemd 或其他服务管理工具（如 Docker）启动 MySQL 服务。
+# 如果你是通过 docker 启动 MySQL 容器，那么 mysqld_safe 根本不会被执行，配置文件中 [mysqld_safe] 的设置无效
+#[mysqld_safe]
+#log-error = /var/lib/mysql/logs/mysqld.log
+# 指定 MySQL 进程的 PID 文件路径，便于管理和监控
+#pid-file  = /var/lib/mysql/mysqld.pid
+
+###### [mysqld] 定义 mysql 服务端的核心配置 ######
+[mysqld]
+socket=/var/lib/mysql/mysql.sock
+# 端口
+port=3306
+# 以 mysql 用户身份运行，而非 root
+user=mysql
+# 确保在生产环境中，每个 MySQL 实例都有唯一的 server-id，主从复制场景必须设置
+server-id = 1
+# 数据文件存储路径
+datadir=/var/lib/mysql
+#innodb_data_home_dir=/var/lib/mysql/innodb_data
+# redo log 存储路径
+#innodb_log_group_home_dir=/var/lib/mysql/innodb_log_group
+# 慢 SQL 日志，执行时间超过3秒判定为慢SQL
+long_query_time = 3
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/slow-query.log
+#log_queries_not_using_indexes=on
+# 错误日志，确保监控和排查错误
+log_error = /var/log/mysql/error.log
+# 将检测到的所有死锁详情打印到错误日志（mysqld error log）中，默认值是 off
+#innodb_print_all_deadlocks = 1
+# 控制日志细粒度的选项，5.7 版本中默认为 3, 8.0 版本中为 2（数值越大，日志越详细）
+#log_error_verbosity = 3 
+# 通用日志，可以用于调试，在生产环境中，可能会导致性能问题，自行判断影响后使用
+general_log = 1
+general_log_file = /var/log/mysql/general.log
+
+
+# ----------- 以下是 server 升降配需要变更的通用配置 --------------
+# 索引缓冲区大小（MyISAM 存储引擎）
+key_buffer_size = 128M
+# 关闭查询缓存 （MySQL8.0已经移除查询缓存，需要注释掉下面这两项关于查询缓存的配置，不然会导致MySQL8.0+无法启动）
+query_cache_size = 0M
+query_cache_type = 0
+# 内存临时表的最大大小
+tmp_table_size = 1G
+# InnoDB 缓冲池大小，用于存储数据和索引页以提高性能
+innodb_buffer_pool_size = 4G
+# redo log 缓冲区大小，如果有大量的事务操作可以适当增大这个值，可以减少磁盘 I/O 操作
+innodb_log_buffer_size = 32M
+# 排序缓冲区大小 ×连接数
+sort_buffer_size = 4M
+# 读缓冲区大小 ×连接数
+read_buffer_size = 4M
+# 随机读缓冲区大小 ×连接数
+read_rnd_buffer_size = 2M
+# 关联表缓冲区大小 ×连接数
+join_buffer_size = 8M
+# 线程堆栈大小 ×连接数
+thread_stack = 512K
+# binlog 缓存大小
+binlog_cache_size = 256K
+# 线程缓存大小
+thread_cache_size = 256
+# 可以同时打开的表的最大数量
+table_open_cache = 1024
+# 允许最大连接数
+max_connections=500
+# InnoDB 用于读写 I/O 操作的线程数
+# innodb_read_io_threads：官方文档中的默认值为 (available logical processors / 2), min of 4
+# innodb_read_io_threads：官方文档中的默认值为 4
+innodb_read_io_threads = 4
+innodb_write_io_threads = 4
+
+# ----------- 以下是通用配置，除非需要针对特定场景调优，一般不需要更改 --------------
+# ----------- InnoDB 相关 --------------
+# InnoDB 表的数据独立存储（ .ibd 文件）
+innodb_file_per_table = ON
+# 停机前转储 Buffer Pool 数据，停机后加载 Buffer Pool 数据，缩短预热时间，转储比例 25%
+innodb_buffer_pool_dump_at_shutdown = ON
+innodb_buffer_pool_load_at_startup = ON
+innodb_buffer_pool_dump_pct = 25
+# 脏页刷写连坐机制（1=开启，0=关闭）
+# 在准备刷一个脏页的时候，如果这个数据页旁边的数据页刚好是脏页，就会把这个 “邻居” 也带着一起刷掉；而且这个把 “邻居” 拖下水的逻辑还可以继续蔓延，也就是对于每个邻居数据页，如果跟它相邻的数据页也还是脏页的话，也会被放到一起刷。
+# 找 “邻居” 这个优化在机械硬盘时代是很有意义的，可以减少很多随机 IO。机械硬盘的随机 IOPS 一般只有几百，相同的逻辑操作减少随机 IO 就意味着系统性能的大幅度提升。
+innodb_flush_neighbors = 0
+# 自增锁模式
+# 这个参数的值被设置为 0 时，表示采用之前 MySQL 5.0 版本的策略，即语句执行结束后才释放锁；
+# 这个参数的值被设置为 1 时：普通 insert 语句，自增锁在申请之后就马上释放；类似 insert … select 这样的批量插入数据的语句，自增锁还是要等语句结束后才被释放；
+# 这个参数的值被设置为 2 时，所有的申请自增主键的动作都是申请后就释放锁；
+innodb_autoinc_lock_mode=2
+# 指定 InnoDB 共享表空间文件的名称、初始大小、自动扩展
+innodb_data_file_path = ibdata1:10M:autoextend
+# InnoDB 获取行锁等待超时时间（单位秒）
+# 当一个事务请求一个锁，但该锁已被其他事务持有时，它会等待这个时间。如果超过此时间，InnoDB 会返回一个错误。
+innodb_lock_wait_timeout = 50
+# InnoDB 最大脏页百分比
+# 当脏页的比例超过该值时，InnoDB 会开始强制 flush 脏页数据到磁盘
+innodb_max_dirty_pages_pct = 75
+# 磁盘 io 能力，最好用 fio 测试硬盘的读写能力再设，默认是200
+# 设小了刷脏页就慢，脏页累积会影响查询和更新性能，设大了会导致数据从 buffer pool 和 change pool 中移除的速度过快，缓存将无法带来明显好处
+innodb_io_capacity = 300
+# 并发线程上限数（注意不要和并发连接概念混淆）
+# 并发查询太高才是 CPU 杀手，在线程进入锁等待以后，并发线程的计数会减一，也就是说等行锁（也包括间隙锁）的线程是不算在这里面的
+innodb_thread_concurrency=128
+# redo log 单个文件体积上限、文件个数
+# redo log file size：影响事务的提交和恢复性能，较大的日志文件可以减少日志切换的频率，redo log 写满后要 flush 脏页，此时系统不能再接受 update 操作，更新操作会跌 0，建议 这种情况要尽量避免
+innodb_log_file_size=1G
+innodb_log_files_in_group=4
+# 双1配置，用于保证异常重启不丢数据
+# 每次事务的 binlog 都持久化到磁盘 + 每次事务的 redo log 都持久化到磁盘
+sync_binlog = 1
+innodb_flush_log_at_trx_commit = 1
+# bin log 格式
+# 如果delete语句误删了数据，可以用 Flashback 恢复数据，前提是确保以下两个配置
+binlog_format=row
+binlog_row_image=FULL
+
+# 启用binlog，并设置二进制日志文件的前缀为 mysql-bin
+log-bin=mysql-bin
+# bin log 单个文件体积限制（超过则另起一个新文件） / bin log 保留天数
+max_binlog_size = 1G
+expire_logs_days = 30
+
+# 服务端默认字符集
+character-set-server=utf8mb4
+# 将 InnoDB 作为默认存储引擎
+default-storage-engine=INNODB
+# 控制服务器和客户端之间通信时允许的最大数据包大小，影响存储大文件 or 批量插入操作效率
+max_allowed_packet=1G
+# performance_schema 中可以监控的表实例的最大数量
+performance_schema_max_table_instances = 384
+# 在内存中缓存的表定义（metadata）的最大数量
+table_definition_cache = 384
+# 发送和接收数据时的缓冲区大小
+net_buffer_length = 4K
+# 禁用 TIMESTAMP 列分配默认值，TIMESTAMP 列在创建时不会自动分配默认的 CURRENT_TIMESTAMP，必须明确指定默认值或允许其为 NULL
+explicit_defaults_for_timestamp = true
+#如果启用它，将会跳过对主机名的反向 DNS 解析，直接使用 IP 地址进行连接。
+#跳过 DNS 解析可以减少连接延迟并提高性能。如果主机名解析缓慢，禁用主机名解析可以显著提升连接速度。
+#skip-name-resolve
+# 客户端 IP 被 MySQL 暂时禁止连接之前允许发生的错误连接次数
+# 如果一个客户端从同一个 IP 发送超过指定次数的连接错误请求，MySQL 将暂时阻止该 IP 的连接，直到管理员手动解除阻止（使用 FLUSH HOSTS 命令）
+max_connect_errors = 100
+# MySQL 进程可以打开的最大文件数（包括数据文件和表文件）
+# 当数据库实例包含大量表或使用多个数据库时，增大 open_files_limit 可以避免文件描述符耗尽的情况，特别是在高并发场景下会有较多的表被频繁访问
+open_files_limit = 65535
+# ----------- 其他 --------------
+# 0: 表名按原样存储在磁盘上，不转换为小写，sql 语句中表名区分大小写;
+# 1: 表名转小写存储在磁盘上，sql 语句中表名不区分大小写;
+# 2: 表名按原样存储在磁盘上，不转换为小写，sql 语句中表名不区分大小写;
+lower_case_table_names=1
+# 定义 MySQL 在执行 SQL 语句时所使用的 SQL 规范和行为模式
+sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+# 在 MySQL 8.0 版本之前，MySQL 默认使用的密码认证插件是 mysql_native_password。
+# 从 MySQL 8.0 开始，MySQL 改变了默认的密码认证插件，改为了 caching_sha2_password，这种新的认证方式更安全，也能够提高连接的速度。
+# 将密码认证插件改为 8.0 之前的那个，如果不改，低版本的 MySQL 客户端可能无法连接
+# default_authentication_plugin=mysql_native_password
+# 禁用符号链接，防止各种潜在安全风险
+symbolic-links=0
+# 禁用 MySQL 的外部锁定机制
+# 在使用 MyISAM 存储引擎时，MySQL 不会通过文件系统的外部锁定来管理对数据文件的访问。
+# 在某些情况下，外部锁定会导致性能瓶颈，尤其是在多线程环境下。通过禁用外部锁定，MySQL 可以更有效地控制对 MyISAM 表的访问，从而提高性能。
+skip-external-locking
+# 时区
+# default-time_zone='+8:00'
+# 指定 MySQL 启动时要加载的插件
+early-plugin-load = ""
+
+[mysqldump]
+# 快速模式
+# 在导出数据时，使用快速模式会使 mysqldump 在导出大型表时逐行读取数据，而不是将整个表加载到内存中。
+# 在内存受限的环境中或者需要导出大数据量时，启用该选项可以提高效率，减少因内存不足而导致的错误。
+quick
+# 最大允许的数据包大小
+max_allowed_packet = 1G
+
+# myisamchk 工具用于检查和修复 MyISAM 表
+#[myisamchk] 
+#key_buffer_size = 32M
+#sort_buffer_size = 768K
+#read_buffer = 2M
+#write_buffer = 2M
+
+# mysqlhotcopy 工具用于快速备份 MyISAM 数据库表
+#[mysqlhotcopy]
+#interactive-timeout
