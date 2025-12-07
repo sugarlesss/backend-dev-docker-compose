@@ -46,7 +46,7 @@ main() {
     
 
     # 启动服务（可以传递参数）
-    docker-compose up -d "$@"
+    docker compose up -d "$@"
 }
 
 main "$@"
