@@ -20,6 +20,8 @@ init_redis() {
 
 init_elasticsearch() {
     echo "Elasticsearch Init..."
+    mkdir -p ./Elasticsearch/{data,conf,log,plugins}
+    
     # 删除 data log 目录下面的内容，初始化
     rm -rf ./Elasticsearch/data/*
     rm -rf ./Elasticsearch/log/*
