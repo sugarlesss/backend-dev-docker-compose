@@ -18,6 +18,17 @@ init_redis() {
     echo "Redis Init..."
 }
 
+init_elasticsearch() {
+    echo "Elasticsearch Init..."
+    # 删除 data log 目录下面的内容，初始化
+    rm -rf ./Elasticsearch/data/*
+    rm -rf ./Elasticsearch/log/*
+
+    # 目录权限
+    chmod -R 755 ./Elasticsearch
+    chown -R 1000:1000 ./Elasticsearch
+}
+
 # 主函数
 main() {
     # 检查 .env 文件
@@ -38,6 +49,9 @@ main() {
     fi
     if [ "$REDIS_DISABLED" != "true" ]; then
         init_redis
+    fi
+    if [ "$ELASTICSEARCH_DISABLED" != "true" ]; then
+        init_elasticsearch
     fi
     
 

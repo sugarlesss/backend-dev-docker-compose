@@ -35,3 +35,72 @@ services:
     #restart: on-failure:3
     networks:
       - backend-dev
+
+  elasticsearch:
+    # https://hub.docker.com/_/elasticsearch
+    image: elasticsearch:8.17.0
+    container_name: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+      # 为了确认自定义配置文件是否生效，可以将修改默认端口试一下
+      #- 39200:39200
+    environment:
+      - http.port=9200 # HTTP端口
+      - transport.port=9300 # 服务发现端口
+      - ELASTIC_USERNAME=elastic # 用户名
+      - ELASTIC_PASSWORD=123456 # 密码
+      - path.data=/usr/share/elasticsearch/data # 数据文件存储目录
+      - path.logs=/usr/share/elasticsearch/log # 日志文件存储目录
+
+      #- node.name=es01 # 节点名称
+      #- cluster.name=es-docker-cluster # 集群名称
+      #- discovery.seed_hosts=es02,es03
+      #- cluster.initial_master_nodes=es01,es02,es03
+
+      # 单节点模式：避免寻找集群主节点，启动快
+      - discovery.type=single-node
+      # 内存限制：ES 非常吃内存，开发环境限制为 1GB 堆内存，防止撑爆机器
+      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
+      # 锁定内存，避免内存被操作系统 swap（交换）到磁盘, 保证性能和稳定性
+      - bootstrap.memory_lock=true
+
+      # 关闭 Security：开发环境为了方便调试，关闭 SSL 和 密码验证
+      # 生产环境绝对严禁设置为 false！
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+
+    # 允许这个容器里的进程锁定无限量的内存，不受操作系统的默认限制约束。
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+    volumes:
+      # 数据文件映射 宿主机:容器
+      #- ./Elasticsearch/conf:/usr/share/elasticsearch/config
+      - ./Elasticsearch/data:/usr/share/elasticsearch/data
+      - ./Elasticsearch/log:/usr/share/elasticsearch/log
+      - ./Elasticsearch/plugins:/usr/share/elasticsearch/plugins
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题，ro是read only的意思，就是只读。
+      - /etc/localtime:/etc/localtime:ro
+    # 自动尝试重启容器
+    restart: always
+    #restart: on-failure:3
+    networks:
+      - backend-dev
+  kibana:
+    # https://hub.docker.com/_/kibana
+    image: kibana:8.17.0
+    container_name: kibana
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      # 可选：尝试开启 Kibana 中文汉化
+      - I18N_LOCALE=zh-CN
+    depends_on:
+      - elasticsearch
+    networks:
+      - backend-dev
