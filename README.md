@@ -43,6 +43,66 @@
 - Docker Compose 2.0+
 - Git
 
+## 🎯 一键下载并运行
+
+### Linux/Mac
+
+```bash
+# 一键下载并启动（创建 /data 目录并运行）
+mkdir -p /data && cd /data && \
+git clone https://github.com/sugarlesss/backend-dev-docker-compose.git && \
+cd backend-dev-docker-compose && \
+chmod +x *.sh && \
+./rebuild.sh
+```
+
+或者分步执行：
+
+```bash
+# 1. 创建并进入 /data 目录
+mkdir -p /data && cd /data
+
+# 2. 克隆项目
+git clone https://github.com/sugarlesss/backend-dev-docker-compose.git
+
+# 3. 进入项目目录
+cd backend-dev-docker-compose
+
+# 4. 赋予脚本执行权限
+chmod +x *.sh
+
+# 5. 启动服务
+./rebuild.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+# 1. 创建并进入目录（建议使用 D:\data）
+New-Item -ItemType Directory -Force -Path "D:\data" | Out-Null
+Set-Location "D:\data"
+
+# 2. 克隆项目
+git clone https://github.com/sugarlesss/backend-dev-docker-compose.git
+
+# 3. 进入项目目录
+Set-Location backend-dev-docker-compose
+
+# 4. 启动服务（使用 Git Bash）
+bash rebuild.sh
+```
+
+### Windows (Git Bash)
+
+```bash
+# 一键下载并启动
+mkdir -p /d/data && cd /d/data && \
+git clone https://github.com/sugarlesss/backend-dev-docker-compose.git && \
+cd backend-dev-docker-compose && \
+chmod +x *.sh && \
+./rebuild.sh
+```
+
 ## ⚡ 快速开始
 
 ### 一键启动所有服务
