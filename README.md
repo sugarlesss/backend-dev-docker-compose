@@ -43,21 +43,9 @@
 - Docker Compose 2.0+
 - Git
 
-## 🎯 一键下载并运行
+## 🎯 下载并运行
 
 ### Linux/Mac
-
-```bash
-# 一键下载并启动（创建 /data 目录并运行）
-mkdir -p /data && cd /data && \
-git clone https://github.com/sugarlesss/backend-dev-docker-compose.git && \
-cd backend-dev-docker-compose && \
-chmod +x *.sh && \
-./rebuild.sh
-```
-
-或者分步执行：
-
 ```bash
 # 1. 创建并进入 /data 目录
 mkdir -p /data && cd /data
