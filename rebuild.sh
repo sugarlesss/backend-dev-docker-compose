@@ -16,6 +16,16 @@ init_mysql() {
 
 init_redis() {
     echo "Redis Init..."
+    mkdir -p ./Redis/{data,conf,log}
+    # 删除 data log 目录下面的内容，初始化
+    rm -rf ./Redis/data/*
+    rm -rf ./Redis/log/*
+    # 重新创建日志文件
+    touch ./Redis/log/redis.log
+    # 目录权限
+    chmod -R 755 ./Redis
+    chmod -R 777 ./Redis/log/redis.log
+    chown -R root:root ./Redis
 }
 
 init_elasticsearch() {

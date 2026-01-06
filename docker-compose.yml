@@ -36,7 +36,37 @@ services:
     networks:
       - backend-dev
 
+  redis:
+    profiles:
+      - ${REDIS_DISABLED:+disabled}
+    # 镜像及版本
+    image: redis:7.4.7
+    #image: redis:8.2.1
+    # 自定义容器名
+    container_name: redis
+    ports:
+     # 宿主机端口:容器端口
+     - 6379:6379
+    # 挂载映射，可以让数据或配置持久化
+    volumes:
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题，ro是read only的意思，就是只读。
+      - /etc/localtime:/etc/localtime:ro
+      - ./Redis/conf:/usr/local/etc/redis
+      - ./Redis/data:/data
+      - ./Redis/log:/var/log/redis
+
+    # docker执行的启动命令
+    # command: /usr/local/bin/redis-server /root/redis-docker/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    # 自动尝试重启容器
+    restart: always
+    # restart: on-failure:3
+    networks:
+      - backend-dev
+
   elasticsearch:
+    profiles:
+        - ${ELASTICSEARCH_DISABLED:+disabled}
     # https://hub.docker.com/_/elasticsearch
     image: elasticsearch:8.17.0
     container_name: elasticsearch
@@ -87,7 +117,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
     # 自动尝试重启容器
     restart: always
-    #restart: on-failure:3
+    # restart: on-failure:3
     networks:
       - backend-dev
   kibana:
