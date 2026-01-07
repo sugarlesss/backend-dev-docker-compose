@@ -120,6 +120,7 @@ services:
     # restart: on-failure:3
     networks:
       - backend-dev
+
   kibana:
     # https://hub.docker.com/_/kibana
     image: kibana:8.17.0
