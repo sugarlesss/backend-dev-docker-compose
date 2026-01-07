@@ -167,7 +167,7 @@ services:
     networks:
       - backend-dev
 
-grafana:
+  grafana:
     profiles:
       - ${GRAFANA_DISABLED:+disabled}
     # https://hub.docker.com/r/grafana/grafana
