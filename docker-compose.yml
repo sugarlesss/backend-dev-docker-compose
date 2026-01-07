@@ -134,3 +134,33 @@ services:
       - elasticsearch
     networks:
       - backend-dev
+
+  prometheus:
+    profiles:
+      - ${PROMETHEUS_DISABLED:+disabled}
+    # https://hub.docker.com/r/prom/prometheus
+    image: prom/prometheus:v3.0.1
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      # 配置文件映射
+      - ./Prometheus/conf:/etc/prometheus
+      # 数据文件映射
+      - ./Prometheus/data:/prometheus
+      # 日志文件映射
+      - ./Prometheus/log:/prometheus/log
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      # 开启后可通过 curl -X POST http://127.0.0.1:9090/-/reload 触发配置重载
+      - '--web.enable-lifecycle'
+      # 保留时间默认为 15d, 支持的单位：y、w、d、h、m、s、ms
+      - '--storage.tsdb.retention.time=1m'
+      # 保留数据时长 默认为0或禁用, 支持的单位：B、KB、MB、GB、TB、PB、EB
+      - '--storage.tsdb.retention.size=1GB'
+    # 自动尝试重启容器
+    restart: always
+    networks:
+      - backend-dev

@@ -41,7 +41,7 @@ init_redis() {
 init_elasticsearch() {
     echo "Elasticsearch Init..."
     mkdir -p ./Elasticsearch/{data,conf,log,plugins}
-    
+
     # 删除 data log 目录下面的内容，初始化
     rm -rf ./Elasticsearch/data/*
     rm -rf ./Elasticsearch/log/*
@@ -49,6 +49,19 @@ init_elasticsearch() {
     # 目录权限
     chmod -R 755 ./Elasticsearch
     chown -R 1000:1000 ./Elasticsearch
+}
+
+init_prometheus() {
+    echo "Prometheus Init..."
+    mkdir -p ./Prometheus/{data,conf,log}
+
+    # 删除 data log 目录下面的内容，初始化
+    rm -rf ./Prometheus/data/*
+    rm -rf ./Prometheus/log/*
+
+    # 目录权限
+    chmod -R 755 ./Prometheus
+    chown -R root:root ./Prometheus
 }
 
 # 主函数
@@ -84,7 +97,9 @@ main() {
     if [ "$ELASTICSEARCH_DISABLED" != "true" ]; then
         init_elasticsearch
     fi
-    
+    if [ "$PROMETHEUS_DISABLED" != "true" ]; then
+        init_prometheus
+    fi
 
     # 启动服务
     $DOCKER_COMPOSE up -d

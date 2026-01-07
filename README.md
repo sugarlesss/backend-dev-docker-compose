@@ -172,6 +172,62 @@ http://localhost:5601
 
 ---
 
+### Prometheus 3.0.1
+
+**基本配置**
+- **容器名称**: prometheus
+- **镜像版本**: prom/prometheus:v3.0.1
+- **主机地址**: localhost
+- **端口**: 9090
+- **运行模式**: 单节点
+
+**访问方式**
+```bash
+# Web UI
+http://localhost:9090
+
+# 查看监控目标
+http://localhost:9090/targets
+
+# HTTP API
+curl http://localhost:9090/api/v1/targets
+```
+
+**关键配置参数**
+- **全局抓取间隔**: 10 秒
+- **全局抓取超时**: 10 秒
+- **规则评估间隔**: 10 秒
+- **数据保留时间**: 1 分钟（开发环境）
+- **数据保留大小**: 1GB
+- **热重载**: 启用（--web.enable-lifecycle）
+- **配置文件路径**: /etc/prometheus/prometheus.yml
+
+**重新加载配置**
+```bash
+# 热重载 Prometheus 配置（无需重启）
+curl -X POST http://localhost:9090/-/reload
+```
+
+**数据持久化**
+- 配置文件: `./Prometheus/conf` → `/etc/prometheus`
+- 数据文件: `./Prometheus/data` → `/prometheus`
+- 日志文件: `./Prometheus/log` → `/prometheus/log`
+
+**配置文件说明**
+Prometheus 配置文件位于 `Prometheus/conf/prometheus.yml`，包含以下抓取配置：
+- **prometheus**: 监控 Prometheus 自身（127.0.0.1:9090）
+- **backend-service**: 监控后端服务示例（192.168.9.1:12345）
+  - 抓取间隔: 5 秒
+  - 指标路径: /actuator/prometheus
+  - 可根据实际需求修改目标地址
+
+**注意事项**
+- 开发环境数据保留时间设置为 1 分钟，可根据需要调整
+- 如需添加新的监控目标，编辑 `Prometheus/conf/prometheus.yml` 后执行热重载命令
+- 生产环境建议增加数据保留时间和大小限制
+
+---
+
 ## 环境变量配置
 
 通过编辑 `.env` 文件可以启用或禁用特定服务：
@@ -188,6 +244,9 @@ http://localhost:5601
 
 # 禁用 ElasticSearch
 # ELASTICSEARCH_DISABLED=true
+
+# 禁用 Prometheus
+# PROMETHEUS_DISABLED=true
 ```
 
 修改 `.env` 文件后，重新运行 `./rebuild.sh` 即可生效。
@@ -217,6 +276,19 @@ docker compose down -v
 docker compose exec mysql bash
 docker compose exec redis bash
 docker compose exec elasticsearch bash
+docker compose exec prometheus bash
+```
+
+**Prometheus 特定命令**
+```bash
+# 重新加载 Prometheus 配置（热重载）
+curl -X POST http://localhost:9090/-/reload
+
+# 查看 Prometheus 版本信息
+curl http://localhost:9090/api/v1/status/buildinfo
+
+# 查看所有监控目标
+curl http://localhost:9090/api/v1/targets
 ```
 
 ## 许可证

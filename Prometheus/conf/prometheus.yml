@@ -1,0 +1,26 @@
+# 全局配置
+global:
+  scrape_interval: 10s       # 设置全局抓取间隔为 10 秒，即每隔 10 秒从目标获取一次指标数据
+  scrape_timeout: 10s        # 设置全局抓取超时时间为 10 秒，超过此时间未获取到数据则视为抓取失败
+  evaluation_interval: 10s   # 设置规则评估间隔为 10 秒，即每隔 10 秒评估一次定义的规则
+  #query_log_file: /prometheus/query.log  # 指定查询日志文件路径，用于记录 PromQL 查询日志
+
+# 抓取配置
+scrape_configs:
+  # 配置 Prometheus 自身的监控
+  - job_name: 'prometheus'   # job名称，用于标识该抓取配置
+    scheme: http             # 使用 HTTP 协议进行抓取
+    metrics_path: /metrics   # 指定抓取指标的路径，默认为 /metrics
+    static_configs:
+      - targets: ['127.0.0.1:9090']  # 静态配置抓取目标，这里是本地主机的 9090 端口，即 Prometheus 自身
+
+  # 配置后端应用的监控
+  - job_name: 'backend-service'  # 作业名称，用于标识该抓取配置
+    scrape_interval: 5s          # 覆盖全局设置，设置该作业的抓取间隔为 5 秒
+    scrape_timeout: 5s           # 覆盖全局设置，设置该作业的抓取超时时间为 5 秒
+    metrics_path: /actuator/prometheus  # 指定抓取指标的路径，通常用于 Spring Boot 应用的 Actuator 暴露的指标路径
+    scheme: http                 # 使用 HTTP 协议进行抓取
+    static_configs:
+      - targets: ['192.168.9.1:12345']  # 静态配置抓取目标，这里是指定的后端服务地址和端口
+        labels:
+          group: 'local'           # 为该目标添加自定义标签，用于在指标中区分不同环境或分组
