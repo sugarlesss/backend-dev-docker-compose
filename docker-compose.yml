@@ -170,7 +170,8 @@ services:
     profiles:
       - ${GRAFANA_DISABLED:+disabled}
     # https://hub.docker.com/r/grafana/grafana
-    image: grafana/grafana:11.4.0
+    #image: grafana/grafana:11.4.0
+    image: grafana/grafana:12.4.0-20766360996-ubuntu
     container_name: grafana
     ports:
       - 3000:3000
