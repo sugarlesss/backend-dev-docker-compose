@@ -80,6 +80,20 @@ init_grafana() {
     chown -R 472:472 ./Grafana
 }
 
+init_rocketmq() {
+    echo "RocketMQ Init..."
+    mkdir -p ./RocketMQ/{data/{namesrv,broker,proxy},log/{broker},conf}
+
+    # 删除 data log 目录下面的内容，初始化
+    rm -rf ./RocketMQ/data/*
+    rm -rf ./RocketMQ/log/*
+
+    # 目录权限
+    # RocketMQ 容器内的用户 UID:GID 为 3000:3000
+    chmod -R 755 ./RocketMQ
+    chown -R 3000:3000 ./RocketMQ
+}
+
 # 主函数
 main() {
     # 切换到脚本所在目录
@@ -119,6 +133,9 @@ main() {
     fi
     if [ "$GRAFANA_DISABLED" != "true" ]; then
         init_grafana
+    fi
+    if [ "$ROCKETMQ_DISABLED" != "true" ]; then
+        init_rocketmq
     fi
 
     # 启动服务

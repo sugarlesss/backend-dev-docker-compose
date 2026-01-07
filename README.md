@@ -266,6 +266,71 @@ http://localhost:3000
 
 ---
 
+### RocketMQ 5.3.2
+
+**基本配置**
+- **镜像版本**: apache/rocketmq:5.3.2
+- **组件**: NameServer、Broker、Proxy
+
+#### NameServer
+- **容器名称**: rocketmq-namesrv
+- **主机地址**: localhost
+- **端口**: 9876
+- **运行用户**: rocketmq (UID:GID 3000:3000)
+
+#### Broker
+- **容器名称**: rocketmq-broker
+- **主机地址**: localhost
+- **端口**: 10909, 10911, 10912
+- **依赖服务**: rocketmq-namesrv
+- **运行用户**: rocketmq (UID:GID 3000:3000)
+
+#### Proxy
+- **容器名称**: rocketmq-proxy
+- **主机地址**: localhost
+- **端口**: 8080 (HTTP), 8081 (gRPC)
+- **依赖服务**: rocketmq-broker, rocketmq-namesrv
+- **运行用户**: rocketmq (UID:GID 3000:3000)
+
+**连接方式**
+```bash
+# NameServer 地址
+rocketmq-namesrv:9876
+
+# Proxy 地址（用于客户端连接）
+localhost:8081
+```
+
+**数据持久化**
+- NameServer 数据: `./RocketMQ/data/namesrv` → `/home/rocketmq/logs`
+- Broker 数据: `./RocketMQ/data/broker` → `/home/rocketmq/store`
+- Broker 日志: `./RocketMQ/log/broker` → `/home/rocketmq/logs`
+- Proxy 数据: `./RocketMQ/data/proxy` → `/home/rocketmq/logs`
+
+**使用说明**
+- RocketMQ 5 采用新的架构，包含 NameServer、Broker 和 Proxy 三个组件
+- 客户端通过 Proxy 连接到 RocketMQ 集群
+- Proxy 端口：8080 (HTTP), 8081 (gRPC)
+- NameServer 端口：9876
+- Broker 端口：10909, 10911, 10912
+
+**创建 Topic**
+```bash
+# 进入 broker 容器
+docker compose exec rocketmq-broker bash
+
+# 创建 Topic
+sh mqadmin updatetopic -t TestTopic -c DefaultCluster
+```
+
+**注意事项**
+- RocketMQ 容器使用 UID:GID 为 3000:3000 的用户运行
+- 数据目录权限已设置为 3000:3000，确保容器有读写权限
+- Broker 依赖 NameServer，Proxy 依赖 Broker 和 NameServer
+- 生产环境建议使用集群模式部署
+
+---
+
 ## 环境变量配置
 
 通过编辑 `.env` 文件可以启用或禁用特定服务：
@@ -288,6 +353,9 @@ http://localhost:3000
 
 # 禁用 Grafana
 # GRAFANA_DISABLED=true
+
+# 禁用 RocketMQ
+# ROCKETMQ_DISABLED=true
 ```
 
 修改 `.env` 文件后，重新运行 `./rebuild.sh` 即可生效。
@@ -340,6 +408,19 @@ curl http://localhost:3000/api/health
 
 # 查看 Grafana 配置（需要认证）
 curl -u admin:grafana9527 http://localhost:3000/api/settings
+```
+
+**RocketMQ 特定命令**
+```bash
+# 进入 Broker 容器创建 Topic
+docker compose exec rocketmq-broker bash
+sh mqadmin updatetopic -t TestTopic -c DefaultCluster
+
+# 查看集群信息
+docker compose exec rocketmq-broker sh mqadmin clusterList
+
+# 查看 Topic 列表
+docker compose exec rocketmq-broker sh mqadmin topicList
 ```
 
 ## 许可证

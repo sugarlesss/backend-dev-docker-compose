@@ -166,12 +166,11 @@ services:
     networks:
       - backend-dev
 
-  grafana:
+grafana:
     profiles:
       - ${GRAFANA_DISABLED:+disabled}
     # https://hub.docker.com/r/grafana/grafana
-    #image: grafana/grafana:11.4.0
-    image: grafana/grafana:12.4.0-20766360996-ubuntu
+    image: grafana/grafana:11.4.0
     container_name: grafana
     ports:
       - 3000:3000
@@ -189,3 +188,73 @@ services:
     restart: always
     networks:
       - backend-dev
+
+  rocketmq-namesrv:
+    profiles:
+      - ${ROCKETMQ_DISABLED:+disabled}
+    # https://rocketmq.apache.org/zh/docs/quickStart/03quickstartWithDockercompose
+    image: apache/rocketmq:5.3.2
+    container_name: rocketmq-namesrv
+    ports:
+      - 9876:9876
+    volumes:
+      # 数据文件映射
+      - ./RocketMQ/data/namesrv:/home/rocketmq/logs
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    # 自动尝试重启容器
+    restart: always
+    networks:
+      - backend-dev
+    command: sh mqnamesrv
+
+  rocketmq-broker:
+    profiles:
+      - ${ROCKETMQ_DISABLED:+disabled}
+    # https://rocketmq.apache.org/zh/docs/quickStart/03quickstartWithDockercompose
+    image: apache/rocketmq:5.3.2
+    container_name: rocketmq-broker
+    ports:
+      - 10909:10909
+      - 10911:10911
+      - 10912:10912
+    environment:
+      - NAMESRV_ADDR=rocketmq-namesrv:9876
+    volumes:
+      # 数据文件映射
+      - ./RocketMQ/data/broker:/home/rocketmq/store
+      - ./RocketMQ/log/broker:/home/rocketmq/logs
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - rocketmq-namesrv
+    # 自动尝试重启容器
+    restart: always
+    networks:
+      - backend-dev
+    command: sh mqbroker
+
+  rocketmq-proxy:
+    profiles:
+      - ${ROCKETMQ_DISABLED:+disabled}
+    # https://rocketmq.apache.org/zh/docs/quickStart/03quickstartWithDockercompose
+    image: apache/rocketmq:5.3.2
+    container_name: rocketmq-proxy
+    ports:
+      - 8080:8080
+      - 8081:8081
+    environment:
+      - NAMESRV_ADDR=rocketmq-namesrv:9876
+    volumes:
+      # 数据文件映射
+      - ./RocketMQ/data/proxy:/home/rocketmq/logs
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - rocketmq-broker
+      - rocketmq-namesrv
+    # 自动尝试重启容器
+    restart: always
+    networks:
+      - backend-dev
+    command: sh mqproxy
