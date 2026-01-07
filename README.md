@@ -302,10 +302,11 @@ localhost:8081
 ```
 
 **数据持久化**
-- NameServer 数据: `./RocketMQ/data/namesrv` → `/home/rocketmq/logs`
+- NameServer 数据: `./RocketMQ/data/namesrv` → `/home/rocketmq/store`
 - Broker 数据: `./RocketMQ/data/broker` → `/home/rocketmq/store`
 - Broker 日志: `./RocketMQ/log/broker` → `/home/rocketmq/logs`
-- Proxy 数据: `./RocketMQ/data/proxy` → `/home/rocketmq/logs`
+- Proxy 数据: `./RocketMQ/data/proxy` → `/home/rocketmq/store`
+- Proxy 日志: `./RocketMQ/log/proxy` → `/home/rocketmq/logs`
 
 **使用说明**
 - RocketMQ 5 采用新的架构，包含 NameServer、Broker 和 Proxy 三个组件

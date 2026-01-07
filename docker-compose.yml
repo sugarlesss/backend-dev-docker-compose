@@ -200,7 +200,7 @@ services:
       - 9876:9876
     volumes:
       # 数据文件映射
-      - ./RocketMQ/data/namesrv:/home/rocketmq/logs
+      - ./RocketMQ/data/namesrv:/home/rocketmq/store
       # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
       - /etc/localtime:/etc/localtime:ro
     # 自动尝试重启容器
@@ -248,7 +248,8 @@ services:
       - NAMESRV_ADDR=rocketmq-namesrv:9876
     volumes:
       # 数据文件映射
-      - ./RocketMQ/data/proxy:/home/rocketmq/logs
+      - ./RocketMQ/data/proxy:/home/rocketmq/store
+      - ./RocketMQ/log/proxy:/home/rocketmq/logs
       # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
       - /etc/localtime:/etc/localtime:ro
     depends_on:

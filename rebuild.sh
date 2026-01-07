@@ -82,14 +82,14 @@ init_grafana() {
 
 init_rocketmq() {
     echo "RocketMQ Init..."
-    mkdir -p ./RocketMQ/{data/{namesrv,broker,proxy},log/{broker},conf}
-
+    mkdir -p ./RocketMQ/{data/{namesrv,broker,proxy},log/{broker,proxy},conf}
     # 删除 data log 目录下面的内容，初始化
     rm -rf ./RocketMQ/data/*
     rm -rf ./RocketMQ/log/*
-
+    # 创建日志子目录
+    mkdir -p ./RocketMQ/log/broker/rocketmqlogs
+    mkdir -p ./RocketMQ/log/proxy/rocketmqlogs
     # 目录权限
-    # RocketMQ 容器内的用户 UID:GID 为 3000:3000
     chmod -R 755 ./RocketMQ
     chown -R 3000:3000 ./RocketMQ
 }
