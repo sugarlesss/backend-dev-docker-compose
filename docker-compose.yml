@@ -221,7 +221,7 @@ services:
       - 10912:10912
     environment:
       - NAMESRV_ADDR=rocketmq-namesrv:9876
-      - JAVA_OPT_EXT=-Xms512m -Xmx512m -Xmn256m
+      #- JAVA_OPT_EXT=-Xms512m -Xmx512m -Xmn256m
     volumes:
       # 数据文件映射
       - ./RocketMQ/data/broker:/home/rocketmq/store
@@ -247,7 +247,7 @@ services:
       - 8081:8081
     environment:
       - NAMESRV_ADDR=rocketmq-namesrv:9876
-      - JAVA_OPT_EXT=-Xms512m -Xmx512m -Xmn256m
+      #- JAVA_OPT_EXT=-Xms512m -Xmx512m -Xmn256m
     volumes:
       # 数据文件映射
       - ./RocketMQ/data/proxy:/home/rocketmq/store
