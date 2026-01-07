@@ -72,10 +72,12 @@ main() {
     cd "$(dirname "$0")" || exit 1
 
     # 关闭所有容器
-    echo "========================================="
     echo "关闭所有容器..."
-    echo "========================================="
     $DOCKER_COMPOSE down
+
+    echo "更新仓库..."
+    git checkout .
+    git pull
 
     # 检查 .env 文件
     if [ ! -f .env ]; then
