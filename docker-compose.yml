@@ -64,6 +64,28 @@ services:
     networks:
       - backend-dev
 
+  redis-exporter:
+    profiles:
+      - ${REDIS_EXPORTER_DISABLED:+disabled}
+    # https://github.com/oliver006/redis_exporter
+    #image: oliver006/redis_exporter:v1.76.0
+    image: oliver006/redis_exporter:v1.80.1
+    container_name: redis-exporter
+    ports:
+      - 9121:9121
+    environment:
+      - REDIS_ADDR=redis:6379
+      - REDIS_PASSWORD="123456"
+    volumes:
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - redis
+    # 自动尝试重启容器
+    restart: always
+    networks:
+      - backend-dev
+
   elasticsearch:
     profiles:
         - ${ELASTICSEARCH_DISABLED:+disabled}

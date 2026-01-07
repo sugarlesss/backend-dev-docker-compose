@@ -109,6 +109,52 @@ redis-cli -h 127.0.0.1 -p 6379
 - 数据文件: `./Redis/data` → `/data`
 - 日志文件: `./Redis/log` → `/var/log/redis`
 
+**注意事项**
+- Redis 默认没有密码，开发环境配置
+- 如果需要设置密码，修改 `Redis/conf/redis.conf` 配置文件
+- RDB 持久化策略：1800s/1个key，300s/100个key，60s/1000个key
+
+---
+
+### Redis Exporter 1.76.0
+
+**基本配置**
+- **容器名称**: redis-exporter
+- **镜像版本**: oliver006/redis_exporter:v1.76.0
+- **主机地址**: localhost
+- **端口**: 9121
+- **监控目标**: redis:6379
+- **依赖服务**: redis
+
+**访问方式**
+```bash
+# 访问指标端点
+curl http://localhost:9121/metrics
+
+# 查看 Redis Exporter 信息
+curl http://localhost:9121
+```
+
+**关键配置参数**
+- **Redis 地址**: redis:6379
+- **无密码认证**: 开发环境 Redis 无密码
+- **指标格式**: Prometheus 格式
+
+**集成到 Prometheus**
+在 `Prometheus/conf/prometheus.yml` 中添加以下配置：
+```yaml
+scrape_configs:
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+```
+
+**注意事项**
+- Redis Exporter 会自动连接到 Redis 并导出指标
+- 如果 Redis 设置了密码，需要配置 `REDIS_PASSWORD` 环境变量
+- 指标数据会被 Prometheus 定期抓取
+- 可以在 Grafana 中创建 Redis 仪表板进行可视化
+
 ---
 
 ### ElasticSearch 8.17.0
@@ -221,10 +267,20 @@ Prometheus 配置文件位于 `Prometheus/conf/prometheus.yml`，包含以下抓
   - 指标路径: /actuator/prometheus
   - 可根据实际需求修改目标地址
 
+**添加 Redis Exporter 监控**
+在 `Prometheus/conf/prometheus.yml` 的 `scrape_configs` 部分添加：
+```yaml
+scrape_configs:
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
+```
+
 **注意事项**
 - 开发环境数据保留时间设置为 1 分钟，可根据需要调整
 - 如需添加新的监控目标，编辑 `Prometheus/conf/prometheus.yml` 后执行热重载命令
 - 生产环境建议增加数据保留时间和大小限制
+- Redis Exporter 会自动连接到 Redis 并导出指标到 Prometheus
 
 ---
 
@@ -357,6 +413,9 @@ sh mqadmin updatetopic -t TestTopic -c DefaultCluster
 
 # 禁用 RocketMQ
 # ROCKETMQ_DISABLED=true
+
+# 禁用 Redis Exporter
+# REDIS_EXPORTER_DISABLED=true
 ```
 
 修改 `.env` 文件后，重新运行 `./rebuild.sh` 即可生效。
@@ -388,6 +447,7 @@ docker compose exec redis bash
 docker compose exec elasticsearch bash
 docker compose exec prometheus bash
 docker compose exec grafana bash
+docker compose exec rocketmq-broker bash
 ```
 
 **Prometheus 特定命令**
