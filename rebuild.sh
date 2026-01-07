@@ -66,6 +66,20 @@ init_prometheus() {
     # chown -R root:root ./Prometheus
 }
 
+init_grafana() {
+    echo "Grafana Init..."
+    mkdir -p ./Grafana/{data,conf,log}
+
+    # 删除 data log 目录下面的内容，初始化
+    rm -rf ./Grafana/data/*
+    rm -rf ./Grafana/log/*
+
+    # 目录权限
+    # Grafana 容器内的用户 UID:GID 为 472:472
+    chmod -R 755 ./Grafana
+    chown -R 472:472 ./Grafana
+}
+
 # 主函数
 main() {
     # 切换到脚本所在目录
@@ -102,6 +116,9 @@ main() {
     fi
     if [ "$PROMETHEUS_DISABLED" != "true" ]; then
         init_prometheus
+    fi
+    if [ "$GRAFANA_DISABLED" != "true" ]; then
+        init_grafana
     fi
 
     # 启动服务

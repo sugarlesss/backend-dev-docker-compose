@@ -228,6 +228,44 @@ Prometheus 配置文件位于 `Prometheus/conf/prometheus.yml`，包含以下抓
 
 ---
 
+### Grafana 11.4.0
+
+**基本配置**
+- **容器名称**: grafana
+- **镜像版本**: grafana/grafana:11.4.0
+- **主机地址**: localhost
+- **端口**: 3000
+- **用户名**: admin
+- **密码**: grafana9527
+
+**访问方式**
+```
+http://localhost:3000
+```
+
+**关键配置参数**
+- **管理员用户名**: admin
+- **管理员密码**: grafana9527
+- **运行用户**: grafana (UID:GID 472:472)
+
+**数据持久化**
+- 数据文件: `./Grafana/data` → `/var/lib/grafana`
+- 配置文件: `./Grafana/conf` → `/etc/grafana`
+- 日志文件: `./Grafana/log` → `/var/log/grafana`
+
+**使用说明**
+- 首次登录使用默认账号密码：admin / grafana9527
+- 登录后可以在设置中修改密码和语言
+- 支持中文界面，可在设置中切换语言
+- 可以添加 Prometheus 作为数据源进行可视化
+
+**注意事项**
+- Grafana 使用 root 用户运行，确保数据目录权限正确
+- 生产环境建议修改默认密码
+- 可以通过 Grafana 的 Web UI 配置数据源和仪表板
+
+---
+
 ## 环境变量配置
 
 通过编辑 `.env` 文件可以启用或禁用特定服务：
@@ -247,6 +285,9 @@ Prometheus 配置文件位于 `Prometheus/conf/prometheus.yml`，包含以下抓
 
 # 禁用 Prometheus
 # PROMETHEUS_DISABLED=true
+
+# 禁用 Grafana
+# GRAFANA_DISABLED=true
 ```
 
 修改 `.env` 文件后，重新运行 `./rebuild.sh` 即可生效。
@@ -277,6 +318,7 @@ docker compose exec mysql bash
 docker compose exec redis bash
 docker compose exec elasticsearch bash
 docker compose exec prometheus bash
+docker compose exec grafana bash
 ```
 
 **Prometheus 特定命令**
@@ -289,6 +331,15 @@ curl http://localhost:9090/api/v1/status/buildinfo
 
 # 查看所有监控目标
 curl http://localhost:9090/api/v1/targets
+```
+
+**Grafana 特定命令**
+```bash
+# 查看 Grafana 版本信息
+curl http://localhost:3000/api/health
+
+# 查看 Grafana 配置（需要认证）
+curl -u admin:grafana9527 http://localhost:3000/api/settings
 ```
 
 ## 许可证

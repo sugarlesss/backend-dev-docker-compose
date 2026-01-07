@@ -165,3 +165,28 @@ services:
     restart: always
     networks:
       - backend-dev
+
+  grafana:
+    profiles:
+      - ${GRAFANA_DISABLED:+disabled}
+    # https://hub.docker.com/r/grafana/grafana
+    image: grafana/grafana:11.4.0
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: grafana9527
+    volumes:
+      # 数据文件映射
+      - ./Grafana/data:/var/lib/grafana
+      # 配置文件映射
+      - ./Grafana/conf:/etc/grafana
+      # 日志文件映射
+      - ./Grafana/log:/var/log/grafana
+      # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
+      - /etc/localtime:/etc/localtime:ro
+    # 自动尝试重启容器
+    restart: always
+    networks:
+      - backend-dev
