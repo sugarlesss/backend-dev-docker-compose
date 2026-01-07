@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# 检测并设置 docker compose 命令
+if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+elif docker-compose --version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo "错误: 未找到 docker compose 或 docker-compose 命令"
+    exit 1
+fi
+
 # 预操作函数
 init_mysql() {
     echo "MySQL Init..."
@@ -43,6 +53,15 @@ init_elasticsearch() {
 
 # 主函数
 main() {
+    # 切换到脚本所在目录
+    cd "$(dirname "$0")" || exit 1
+
+    # 关闭所有容器
+    echo "========================================="
+    echo "关闭所有容器..."
+    echo "========================================="
+    $DOCKER_COMPOSE down
+
     # 检查 .env 文件
     if [ ! -f .env ]; then
         echo "警告: 未找到 .env 文件"
@@ -67,11 +86,11 @@ main() {
     fi
     
 
-    # 启动服务（可以传递参数）
-    docker compose up -d "$@"
+    # 启动服务
+    $DOCKER_COMPOSE up -d
 }
 
-main "$@"
+main
 
 # 启动所有服务
 # ./rebuild.sh
