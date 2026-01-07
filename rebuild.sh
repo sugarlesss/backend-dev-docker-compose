@@ -84,14 +84,13 @@ main() {
         echo "警告: 未找到 .env 文件"
     fi
     
+    
     # 根据 .env 中的配置决定执行哪些预操作
     source .env 2>/dev/null || true
     
-    echo "========================================="
-    echo "启动 Docker Compose 服务..."
-    echo "========================================="
     
     # 只为启用的服务执行预操作
+    echo "启动 Docker Compose 服务..."
     if [ "$MYSQL_DISABLED" != "true" ]; then
         init_mysql
     fi
