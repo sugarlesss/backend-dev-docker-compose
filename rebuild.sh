@@ -82,10 +82,10 @@ init_grafana() {
 
 init_rocketmq() {
     echo "RocketMQ Init..."
+    # 删除整个 RocketMQ 目录
+    rm -rf ./RocketMQ
+    # 创建目录结构
     mkdir -p ./RocketMQ/{data/{namesrv,broker,proxy},log/{broker,proxy},conf}
-    # 删除 data log 目录下面的内容，初始化
-    rm -rf ./RocketMQ/data/*
-    rm -rf ./RocketMQ/log/*
     # 创建日志子目录
     mkdir -p ./RocketMQ/log/broker/rocketmqlogs
     mkdir -p ./RocketMQ/log/proxy/rocketmqlogs
