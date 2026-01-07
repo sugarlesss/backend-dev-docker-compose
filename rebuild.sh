@@ -68,7 +68,7 @@ init_prometheus() {
 
 init_grafana() {
     echo "Grafana Init..."
-    mkdir -p ./Grafana/{data,conf,log}
+    mkdir -p ./Grafana/{data,log}
 
     # 删除 data log 目录下面的内容，初始化
     rm -rf ./Grafana/data/*

@@ -250,8 +250,8 @@ http://localhost:3000
 
 **数据持久化**
 - 数据文件: `./Grafana/data` → `/var/lib/grafana`
-- 配置文件: `./Grafana/conf` → `/etc/grafana`
 - 日志文件: `./Grafana/log` → `/var/log/grafana`
+- 配置文件: 使用容器默认配置
 
 **使用说明**
 - 首次登录使用默认账号密码：admin / grafana9527

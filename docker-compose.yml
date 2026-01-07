@@ -180,8 +180,6 @@ services:
     volumes:
       # 数据文件映射
       - ./Grafana/data:/var/lib/grafana
-      # 配置文件映射
-      - ./Grafana/conf:/etc/grafana
       # 日志文件映射
       - ./Grafana/log:/var/log/grafana
       # 让容器的时钟与宿主机时钟同步，避免时间的问题（ro = read only）
