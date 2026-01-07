@@ -60,8 +60,10 @@ init_prometheus() {
     rm -rf ./Prometheus/log/*
 
     # 目录权限
+    # Prometheus 容器内的用户 UID:GID 为 65534:65534 (nobody:nogroup)
     chmod -R 755 ./Prometheus
-    chown -R root:root ./Prometheus
+    chown -R 65534:65534 ./Prometheus
+    # chown -R root:root ./Prometheus
 }
 
 # 主函数
