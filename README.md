@@ -1,142 +1,180 @@
 # backend-dev-docker-compose
 
-使用 Docker Compose 快速构建后端开发场景使用的中间件环境
+使用 Docker Compose 快速构建后端开发场景使用的中间件环境。
 
-## 📋 项目简介
-
-本项目提供了一套完整的后端开发中间件 Docker Compose 配置，帮助开发者快速搭建本地开发环境。支持一键启动/停止服务，并通过配置文件灵活管理各个中间件的启用状态。
-
-## 🚀 支持的中间件
-
-- **数据库**
-  - MySQL
-  - PostgreSQL
-  - MongoDB
-  
-- **缓存**
-  - Redis
-  - Valkey
-
-- **消息队列**
-  - Kafka
-  - RocketMQ
-  - ZooKeeper
-
-- **分析引擎**
-  - ClickHouse
-  - Doris
-  - ElasticSearch
-
-- **任务调度**
-  - XXL-JOB
-  - PowerJob
-
-- **其他服务**
-  - Nacos（服务发现/配置中心）
-  - Nginx（反向代理）
-  - Grafana（监控可视化）
-  - DataEase（数据可视化）
-
-## 📦 安装要求
-
-- Docker 20.10+
-- Docker Compose 2.0+
-- Git
-
-## 🎯 下载并运行
-
-### Linux/Mac
-```bash
-# 1. 创建并进入 /data 目录
-mkdir -p /data && cd /data
-
-# 2. 克隆项目
-git clone https://github.com/sugarlesss/backend-dev-docker-compose.git
-
-# 3. 进入项目目录
-cd backend-dev-docker-compose
-
-# 4. 赋予脚本执行权限
-chmod +x *.sh
-
-# 5. 启动服务
-./rebuild.sh
-```
-
-### Windows (PowerShell)
-
-```powershell
-# 1. 创建并进入目录（建议使用 D:\data）
-New-Item -ItemType Directory -Force -Path "D:\data" | Out-Null
-Set-Location "D:\data"
-
-# 2. 克隆项目
-git clone https://github.com/sugarlesss/backend-dev-docker-compose.git
-
-# 3. 进入项目目录
-Set-Location backend-dev-docker-compose
-
-# 4. 启动服务（使用 Git Bash）
-bash rebuild.sh
-```
-
-### Windows (Git Bash)
-
-```bash
-# 一键下载并启动
-mkdir -p /d/data && cd /d/data && \
-git clone https://github.com/sugarlesss/backend-dev-docker-compose.git && \
-cd backend-dev-docker-compose && \
-chmod +x *.sh && \
-./rebuild.sh
-```
-
-## ⚡ 快速开始
-
-### 一键启动所有服务
-
-```bash
-# Linux/Mac
-./rebuild.sh
-
-# Windows (PowerShell)
-bash rebuild.sh
-```
-
-### 一键启动单个服务
-
-```bash
-# 只启动 MySQL
-./rebuild.sh mysql
-
-# 只启动 Redis
-./rebuild.sh redis
-```
-
-### 一键停止所有服务
-
-```bash
-docker compose down
-```
-
-### 一键停止并删除数据
-
-```bash
-docker compose down -v
-```
-
-## 📖 详细使用说明
+## 快速开始
 
 ### 1. 克隆项目
 
 ```bash
-git clone https://github.com/你的用户名/backend-dev-docker-compose.git
+git clone https://github.com/sugarlesss/backend-dev-docker-compose.git
 cd backend-dev-docker-compose
 ```
 
-### 2. 配置服务
+### 2. 赋予脚本执行权限
 
-编辑 `.env` 文件来启用或禁用特定服务：
+```bash
+chmod +x rebuild.sh
+```
+
+### 3. 启动服务
+
+```bash
+./rebuild.sh
+```
+
+脚本会自动执行以下操作：
+- 切换到脚本所在目录
+- 关闭所有现有容器
+- 初始化数据目录
+- 根据配置启动所有服务
+
+## 服务配置说明
+
+### MySQL 8.0.44
+
+**基本配置**
+- **容器名称**: mysql
+- **镜像版本**: mysql:8.0.44
+- **主机地址**: localhost 或 127.0.0.1
+- **端口**: 3306
+- **用户名**: root
+- **密码**: `ddXRaM5jr0BjjD6FCgeOMDcvNyzo0CBG`
+
+**连接方式**
+```bash
+# 命令行连接
+mysql -h 127.0.0.1 -P 3306 -u root -p
+# 输入密码: ddXRaM5jr0BjjD6FCgeOMDcvNyzo0CBG
+```
+
+**关键配置参数**
+- **字符集**: utf8mb4
+- **默认存储引擎**: INNODB
+- **Buffer Pool 大小**: 256M
+- **最大连接数**: 100
+- **表名大小写**: 不区分（lower_case_table_names=1）
+- **慢查询日志**: 启用（阈值 3 秒）
+- **通用日志**: 启用
+- **Binlog**: 启用（格式：ROW，保留 30 天）
+- **InnoDB 日志文件**: 1G × 4 个文件
+- **InnoDB 刷盘策略**: 1（双1配置，保证数据安全）
+- **时区**: Asia/Shanghai
+
+**数据持久化**
+- 配置文件: `./MySQL/conf` → `/etc/mysql/conf.d`
+- 数据文件: `./MySQL/data` → `/var/lib/mysql`
+- 日志文件: `./MySQL/log` → `/var/log/mysql`
+- 初始化脚本: `./MySQL/init` → `/docker-entrypoint-initdb.d`
+
+**初始化脚本**
+将 SQL 文件放入 `MySQL/init/` 目录，首次启动时会自动执行。
+
+---
+
+### Redis 7.4.7
+
+**基本配置**
+- **容器名称**: redis
+- **镜像版本**: redis:7.4.7
+- **主机地址**: localhost
+- **端口**: 6379
+- **密码**: 无（未配置密码验证）
+- **绑定地址**: 0.0.0.0（允许外部访问）
+- **保护模式**: 启用
+
+**连接方式**
+```bash
+# 命令行连接
+redis-cli -h 127.0.0.1 -p 6379
+# 无需密码
+```
+
+**关键配置参数**
+- **数据库数量**: 16 个
+- **连接超时**: 0（永不超时）
+- **TCP Keepalive**: 300 秒
+- **日志级别**: notice
+- **RDB 持久化**: 启用
+  - 1800 秒内有 1 个 key 变化
+  - 300 秒内有 100 个 key 变化
+  - 60 秒内有 1000 个 key 变化
+- **RDB 压缩**: 启用
+- **RDB 校验和**: 启用
+- **复制**: 只读副本启用
+- **副本提供过期数据**: 是
+
+**数据持久化**
+- 配置文件: `./Redis/conf` → `/usr/local/etc/redis`
+- 数据文件: `./Redis/data` → `/data`
+- 日志文件: `./Redis/log` → `/var/log/redis`
+
+---
+
+### ElasticSearch 8.17.0
+
+**基本配置**
+- **容器名称**: elasticsearch
+- **镜像版本**: elasticsearch:8.17.0
+- **主机地址**: localhost
+- **端口**: 9200 (HTTP), 9300 (Transport)
+- **用户名**: elastic
+- **密码**: 123456（开发模式下已禁用安全验证）
+- **堆内存**: 1GB (-Xms1024m -Xmx1024m)
+- **运行模式**: 单节点（discovery.type=single-node）
+
+**连接方式**
+```bash
+# 开发模式（无认证）
+curl http://localhost:9200
+
+# 带认证（如果启用安全验证）
+curl -u elastic:123456 http://localhost:9200
+```
+
+**关键配置参数**
+- **安全验证**: 开发模式已禁用
+  - xpack.security.enabled=false
+  - xpack.security.http.ssl.enabled=false
+  - xpack.security.transport.ssl.enabled=false
+- **内存锁定**: 启用（bootstrap.memory_lock=true）
+- **内存限制**: memlock unlimited
+
+**数据持久化**
+- 数据文件: `./Elasticsearch/data` → `/usr/share/elasticsearch/data`
+- 日志文件: `./Elasticsearch/log` → `/usr/share/elasticsearch/log`
+- 插件目录: `./Elasticsearch/plugins` → `/usr/share/elasticsearch/plugins`
+
+**注意事项**
+- ElasticSearch 默认分配 1GB 堆内存，如果机器内存不足，可以在 `docker-compose.yml` 中调整
+- 生产环境必须启用安全设置（SSL、密码验证）
+
+---
+
+### Kibana 8.17.0
+
+**基本配置**
+- **容器名称**: kibana
+- **镜像版本**: kibana:8.17.0
+- **主机地址**: localhost
+- **端口**: 5601
+- **语言**: 中文（I18N_LOCALE=zh-CN）
+- **依赖服务**: elasticsearch
+
+**访问方式**
+```
+http://localhost:5601
+```
+
+**关键配置**
+- **ElasticSearch 地址**: http://elasticsearch:9200
+- 通过容器网络与 ElasticSearch 通信
+
+---
+
+## 环境变量配置
+
+通过编辑 `.env` 文件可以启用或禁用特定服务：
 
 ```bash
 # 默认情况下，不设置任何变量，服务都会启动
@@ -147,61 +185,17 @@ cd backend-dev-docker-compose
 
 # 禁用 Redis
 # REDIS_DISABLED=true
+
+# 禁用 ElasticSearch
+# ELASTICSEARCH_DISABLED=true
 ```
 
-### 3. 启动服务
+修改 `.env` 文件后，重新运行 `./rebuild.sh` 即可生效。
 
-#### 方式一：使用 rebuild.sh 脚本（推荐）
-
-`rebuild.sh` 脚本会在启动前执行必要的初始化操作：
+## 常用命令
 
 ```bash
-# 启动所有已启用的服务
-./rebuild.sh
-
-# 启动特定服务
-./rebuild.sh mysql redis
-
-# 前台运行（查看日志）
-./rebuild.sh --no-detach
-```
-
-#### 方式二：直接使用 docker compose
-
-```bash
-# 启动所有服务
-docker compose up -d
-
-# 启动特定服务
-docker compose up -d mysql redis
-
-# 查看日志
-docker compose logs -f
-
-# 查看特定服务日志
-docker compose logs -f mysql
-```
-
-### 4. 停止服务
-
-```bash
-# 停止所有服务（保留数据）
-docker compose stop
-
-# 停止特定服务
-docker compose stop mysql
-
-# 停止并删除容器（保留数据卷）
-docker compose down
-
-# 停止并删除容器和数据卷
-docker compose down -v
-```
-
-### 5. 查看服务状态
-
-```bash
-# 查看所有服务状态
+# 查看服务状态
 docker compose ps
 
 # 查看服务日志
@@ -209,120 +203,22 @@ docker compose logs -f
 
 # 查看特定服务日志
 docker compose logs -f mysql
+
+# 停止所有服务（保留数据）
+docker compose stop
+
+# 停止并删除容器（保留数据）
+docker compose down
+
+# 停止并删除容器和数据
+docker compose down -v
+
+# 进入容器
+docker compose exec mysql bash
+docker compose exec redis bash
+docker compose exec elasticsearch bash
 ```
 
-## 🔧 服务连接信息
-
-### MySQL
-
-- **主机**: localhost
-- **端口**: 3306
-- **用户名**: root
-- **密码**: ddXRaM5jr0BjjD6FCgeOMDcvNyzo0CBG
-
-连接命令：
-```bash
-mysql -h 127.0.0.1 -P 3306 -u root -p
-```
-
-### Redis
-
-（根据实际配置添加）
-
-### PostgreSQL
-
-（根据实际配置添加）
-
-## 📁 目录结构
-
-```
-.
-├── .env                    # 环境变量配置
-├── docker-compose.yml      # 主配置文件
-├── rebuild.sh              # 初始化启动脚本
-├── MySQL/                  # MySQL 配置和数据
-│   ├── conf/              # 配置文件
-│   ├── data/              # 数据文件
-│   ├── log/               # 日志文件
-│   └── init/              # 初始化 SQL 脚本
-├── Redis/                  # Redis 配置和数据
-├── MongoDB/                # MongoDB 配置和数据
-├── PostgreSQL/             # PostgreSQL 配置和数据
-└── ...                     # 其他中间件目录
-```
-
-## 🛠️ 自定义配置
-
-### 添加新服务
-
-1. 在 `docker-compose.yml` 中添加服务配置
-2. 使用 `profiles` 实现服务的启用/禁用
-3. 在 `.env` 中添加对应的开关变量
-4. 在 `rebuild.sh` 中添加初始化逻辑（如需要）
-
-示例：
-```yaml
-services:
-  your-service:
-    profiles:
-      - ${YOUR_SERVICE_DISABLED:+disabled}
-    image: your-image:latest
-    # ... 其他配置
-```
-
-### 修改服务配置
-
-每个服务的配置文件位于对应的目录下，例如：
-- MySQL 配置：`MySQL/conf/my.cnf`
-- 自定义初始化脚本：`MySQL/init/*.sql`
-
-## 💡 常见问题
-
-### Q1: 端口冲突怎么办？
-
-修改 `docker-compose.yml` 中对应服务的端口映射：
-```yaml
-ports:
-  - "3307:3306"  # 将宿主机端口改为 3307
-```
-
-### Q2: 如何重置某个服务的数据？
-
-```bash
-# 停止服务
-docker compose stop mysql
-
-# 删除数据目录
-rm -rf ./MySQL/data/*
-
-# 重新启动
-./rebuild.sh mysql
-```
-
-### Q3: Windows 下权限问题怎么处理？
-
-Windows 用户建议在 WSL2 或 Git Bash 中运行脚本。或者手动执行初始化步骤后使用 `docker compose up -d`。
-
-### Q4: 如何查看服务占用的资源？
-
-```bash
-docker stats
-```
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-## 📄 许可证
+## 许可证
 
 本项目采用 MIT 许可证，详见 [LICENSE](LICENSE) 文件。
-
-## 📞 联系方式
-
-如有问题或建议，欢迎通过以下方式联系：
-- 提交 Issue
-- 发起 Pull Request
-
----
-
-**Happy Coding! 🎉**
