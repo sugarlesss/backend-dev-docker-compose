@@ -90,7 +90,8 @@ services:
     profiles:
         - ${ELASTICSEARCH_DISABLED:+disabled}
     # https://hub.docker.com/_/elasticsearch
-    image: elasticsearch:8.17.0
+    # image: elasticsearch:8.17.0
+    image: elasticsearch:7.7.1
     container_name: elasticsearch
     ports:
       - 9200:9200
