@@ -13,13 +13,15 @@ fi
 # 预操作函数
 init_mysql() {
     echo "MySQL Init..."
-    # mkdir -p ./MySQL/{data,conf,log,init}
     # 删除 data log 目录下面的内容，初始化
-    rm -rf ./MySQL/data/*
-    rm -rf ./MySQL/log/*
+    rm -rf ./MySQL/57/data/*
+    rm -rf ./MySQL/57/log/*
+    rm -rf ./MySQL/80/data/*
+    rm -rf ./MySQL/80/log/*
     
     # 设置目录权限
-    chown -R 999:999 ./MySQL
+    chown -R 999:999 ./MySQL/57
+    chown -R 999:999 ./MySQL/80
     # 注意：999:999 是 MySQL 容器内的用户 UID:GID
     # Windows 下可能需要使用 icacls 或在 WSL 中执行
 }
@@ -119,7 +121,7 @@ main() {
     
     # 只为启用的服务执行预操作
     echo "启动 Docker Compose 服务..."
-    if [ "$MYSQL_DISABLED" != "true" ]; then
+    if [ "$MYSQL_57_DISABLED" != "true" ] || [ "$MYSQL_80_DISABLED" != "true" ]; then
         init_mysql
     fi
     if [ "$REDIS_DISABLED" != "true" ]; then

@@ -31,10 +31,39 @@ chmod +x rebuild.sh
 
 ## 服务配置说明
 
-### MySQL 8.0.44
+### MySQL
+
+本项目同时运行 MySQL 5.7 和 8.0 两个版本，方便开发和测试。
+
+#### MySQL 5.7.44
 
 **基本配置**
-- **容器名称**: mysql
+- **容器名称**: mysql-57
+- **镜像版本**: mysql:5.7.44
+- **主机地址**: localhost 或 127.0.0.1
+- **端口**: 3307
+- **用户名**: root
+- **密码**: `ddXRaM5jr0BjjD6FCgeOMDcvNyzo0CBG`
+
+**连接方式**
+```bash
+# 命令行连接
+mysql -h 127.0.0.1 -P 3307 -u root -p
+# 输入密码: ddXRaM5jr0BjjD6FCgeOMDcvNyzo0CBG
+```
+
+**数据持久化**
+- 配置文件: `./MySQL/57/conf` → `/etc/mysql/conf.d`
+- 数据文件: `./MySQL/57/data` → `/var/lib/mysql`
+- 日志文件: `./MySQL/57/log` → `/var/log/mysql`
+- 初始化脚本: `./MySQL/57/init` → `/docker-entrypoint-initdb.d`
+
+---
+
+#### MySQL 8.0.44
+
+**基本配置**
+- **容器名称**: mysql-80
 - **镜像版本**: mysql:8.0.44
 - **主机地址**: localhost 或 127.0.0.1
 - **端口**: 3306
@@ -62,13 +91,18 @@ mysql -h 127.0.0.1 -P 3306 -u root -p
 - **时区**: Asia/Shanghai
 
 **数据持久化**
-- 配置文件: `./MySQL/conf` → `/etc/mysql/conf.d`
-- 数据文件: `./MySQL/data` → `/var/lib/mysql`
-- 日志文件: `./MySQL/log` → `/var/log/mysql`
-- 初始化脚本: `./MySQL/init` → `/docker-entrypoint-initdb.d`
+- 配置文件: `./MySQL/80/conf` → `/etc/mysql/conf.d`
+- 数据文件: `./MySQL/80/data` → `/var/lib/mysql`
+- 日志文件: `./MySQL/80/log` → `/var/log/mysql`
+- 初始化脚本: `./MySQL/80/init` → `/docker-entrypoint-initdb.d`
+
+**配置文件说明**
+- MySQL 配置文件按版本划分到 `MySQL/57/` 和 `MySQL/80/` 目录
+- 每个版本目录下包含不同内存配置的 my.cnf 文件（1G、2G、4G、8G、16G、32G）
+- 默认使用 1G 配置，如需调整内存，修改对应版本目录下的 `my.cnf` 或复制对应的配置文件
 
 **初始化脚本**
-将 SQL 文件放入 `MySQL/init/` 目录，首次启动时会自动执行。
+将 SQL 文件放入 `MySQL/57/init/` 或 `MySQL/80/init/` 目录，首次启动时会自动执行。
 
 ---
 
@@ -396,8 +430,11 @@ sh mqadmin updatetopic -t TestTopic -c DefaultCluster
 # 默认情况下，不设置任何变量，服务都会启动
 # 如果要禁用某项服务，取消注释即可
 
-# 禁用 MySQL
-# MYSQL_DISABLED=true
+# 禁用 MySQL 5.7
+# MYSQL_57_DISABLED=true
+
+# 禁用 MySQL 8.0
+# MYSQL_80_DISABLED
 
 # 禁用 Redis
 # REDIS_DISABLED=true
@@ -430,7 +467,8 @@ docker compose ps
 docker compose logs -f
 
 # 查看特定服务日志
-docker compose logs -f mysql
+docker compose logs -f mysql-57
+docker compose logs -f mysql-80
 
 # 停止所有服务（保留数据）
 docker compose stop
@@ -442,7 +480,8 @@ docker compose down
 docker compose down -v
 
 # 进入容器
-docker compose exec mysql bash
+docker compose exec mysql-57 bash
+docker compose exec mysql-80 bash
 docker compose exec redis bash
 docker compose exec elasticsearch bash
 docker compose exec prometheus bash
